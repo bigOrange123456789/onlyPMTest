@@ -65,16 +65,17 @@
 				var path='/myModel/dongshizhang5';
 				console.log(path);
 				var pmLoader = new MyPMLoader(
-						path, //模型路径
+						path,    //模型路径
 						LODArray,//LOD等级的数组
-						camera,//LOD需要判断到相机的距离
-						0,//有多个动画时,表示第0个动画//可以通过pmLoader.updateAnimation(i)来切换动画
-						0.02//动画播放速度//可以通过调整pmLoader.animationSpeed来调整速度
+						camera,  //LOD需要判断到相机的距离
+						0,       //有多个动画时,表示第0个动画//可以通过pmLoader.updateAnimation(i)来切换动画
+						0.02     //动画播放速度//可以通过调整pmLoader.animationSpeed来调整速度
 				);//pmLoader = new myPMLoader('myModel/dongshizhang', LODNumber);//pmLoader = new THREE.PMLoader();//加载PM文件
 				var myModel=pmLoader.obj;
 				myModel.scale.set(1.5,1.5,1.5);
 				myModel.position.set(0,-11.5,25);
 				myModel.rotation.set(0,-Math.PI/2,0);
+				console.log(myModel);
 				scene.add(myModel);
 				//完成创建PM对象
 
