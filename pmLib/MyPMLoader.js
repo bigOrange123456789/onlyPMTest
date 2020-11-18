@@ -494,12 +494,12 @@ function MyPMLoader(url,LODArray,camera,animationType,animationSpeed){
             if(typeof(index)!='undefined')
                 if(index==lengthindex-1||index%Math.ceil(lengthindex/(numberLOD-1))==0)
                     pmMeshHistory.push(mesh[Meshid]);//记录mesh
-            if(index==0){
+            if(index==0){//开启实例化渲染的代码后用于实例化的那个模型骨骼绑定出现了问题
                 var scene=this.scene;//window中含有scene对象
 
-                 geometry.computeVertexNormals();//计算顶点法线
+                 //geometry.computeVertexNormals();//计算顶点法线
                  //console.log(geometry);
-                 geometry.scale( 0.5, 0.5, 0.5 );
+                 //geometry.scale( 0.5, 0.5, 0.5 );
                  var material=new THREE.MeshNormalMaterial();
                  var mesh2=new THREE.InstancedMesh( geometry, material,2);
                  var dummy=new THREE.Object3D();
@@ -510,7 +510,7 @@ function MyPMLoader(url,LODArray,camera,animationType,animationSpeed){
                 dummy.updateMatrix();
                 mesh2.setMatrixAt(1, dummy.matrix);
                 mesh2.instanceMatrix.needsUpdate = true;
-                scene.add(mesh2);/**/
+                scene.add(mesh2);
 
                 var loader = new THREE.BufferGeometryLoader();//BufferGeometry缓冲区几何结构
                 loader.load( './instancing/suzanne_buffergeometry.json', function ( geometry ) {
@@ -528,7 +528,7 @@ function MyPMLoader(url,LODArray,camera,animationType,animationSpeed){
                     mesh.instanceMatrix.needsUpdate = true;
                     scene.add(mesh);
                 } );
-            }
+            }/**/
         }
 
         function updateGeometry(geometry, meshData, Meshid)
