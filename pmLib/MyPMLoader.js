@@ -496,9 +496,15 @@ function MyPMLoader(url,LODArray,camera,animationType,animationSpeed){
             if(index==0){//开启实例化渲染的代码后用于实例化的那个模型骨骼绑定出现了问题
                 var scene=this.scene;//window中含有scene对象
 
-                var material=new THREE.MeshNormalMaterial();//material.map=mesh[Meshid].material.map;
-                //var material=mesh[0].material;//InterleavedBufferAttribute
-                //var material=new THREE.MeshStandardMaterial();material.map=mesh[Meshid].material.map;
+                var material=new THREE.MeshStandardMaterial();//material.map=mesh[Meshid].material.map;
+                //var material=meshMat[0].clone();//InterleavedBufferAttribute
+                //var material=new THREE.MeshStandardMaterial();//material.map=mesh[Meshid].material.map;
+                material.map=new THREE.TextureLoader().load( 'myModel/dongshizhang5/Texture_0_0.jpeg' );
+
+
+                console.log(material);
+                geometry.computeVertexNormals();
+                geometry.computeFaceNormals();
 
                 var mesh2=new THREE.InstancedMesh(geometry,material,3);
                 var dummy=new THREE.Object3D();
@@ -507,13 +513,13 @@ function MyPMLoader(url,LODArray,camera,animationType,animationSpeed){
                 dummy.updateMatrix();//由位置计算齐次坐标变换矩阵
                 mesh2.setMatrixAt(0, dummy.matrix);
 
-                dummy.position.set(5,-1,0);
+                dummy.position.set(0,-1,0);
                 dummy.updateMatrix();//由位置计算齐次坐标变换矩阵
-                mesh2.setMatrixAt(0, dummy.matrix);
-
-                dummy.position.set(-5,-1,0);
-                dummy.updateMatrix();
                 mesh2.setMatrixAt(1, dummy.matrix);
+
+                dummy.position.set(-5,-10,0);
+                dummy.updateMatrix();
+                mesh2.setMatrixAt(2, dummy.matrix);
 
                 scene.add(mesh2);
             }
