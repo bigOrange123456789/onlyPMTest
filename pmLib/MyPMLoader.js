@@ -497,6 +497,21 @@ function MyPMLoader(url,LODArray,camera,animationType,animationSpeed){
             if(index==0){
                 var scene=this.scene;//window中含有scene对象
 
+                 geometry.computeVertexNormals();//计算顶点法线
+                 //console.log(geometry);
+                 geometry.scale( 0.5, 0.5, 0.5 );
+                 var material=new THREE.MeshNormalMaterial();
+                 var mesh2=new THREE.InstancedMesh( geometry, material,2);
+                 var dummy=new THREE.Object3D();
+                 dummy.position.set(5,-1,0);
+                 dummy.updateMatrix();//由位置计算齐次坐标变换矩阵
+                 mesh2.setMatrixAt(0, dummy.matrix);
+                dummy.position.set(-5,-1,0);
+                dummy.updateMatrix();
+                mesh2.setMatrixAt(1, dummy.matrix);
+                mesh2.instanceMatrix.needsUpdate = true;
+                scene.add(mesh2);/**/
+
                 var loader = new THREE.BufferGeometryLoader();//BufferGeometry缓冲区几何结构
                 loader.load( './instancing/suzanne_buffergeometry.json', function ( geometry ) {
                     geometry.computeVertexNormals();//计算顶点法线
