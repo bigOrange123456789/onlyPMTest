@@ -16,13 +16,22 @@
 		<div id="pminfo" style="position:absolute; z-index:2; left:10px; top:10px;display:inline;color:red;size:20px">
 
 		</div>
+		<script type="module">
+			import * as THREE1 from './instancing/three.module.js';//用于实例化渲染
+			window.THREE1=THREE1;
+		</script>
 
 		<script src="js/three.js"></script>
 		<script src="js/OrbitControls.js"></script>
 
 		<script src="pmLib/PMAnimLoader.js"></script>
 		<script src="pmLib/MyPMLoader.js"></script>
-		<script>
+		<script type="module">
+			import * as THREE1 from './instancing/three.module.js';//用于实例化渲染
+			window.THREE1=THREE1;
+
+			console.log(THREE);
+			console.log(THREE1);
 			var controls, camera, scene, renderer;
 			var winWidth , winHeight;
 

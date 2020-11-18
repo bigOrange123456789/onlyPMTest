@@ -11,6 +11,8 @@ function MyPMLoader(url,LODArray,camera,animationType,animationSpeed){
     this.camera=null;
     this.skeletonBones=null;
     this.skeletonMatrix=null;
+    //this.scene=scene;//window中含有scene对象//appInst._renderScenePass.scene;//0000
+    //console.log(this.scene);
 
     this.updateMesh=function(i,skeletonBones,skeletonMatrix){//这个函数的作用是协助实现LOD//0 - pmMeshHistory-1
         if(this.preLODIndex===i||i>=this.pmMeshHistory.length||i<0){this.preLODIndex=i;return;}
@@ -473,14 +475,14 @@ function MyPMLoader(url,LODArray,camera,animationType,animationSpeed){
 
             var pos=rootObject.position;
             var scale=rootObject.scale;
-            var geometry = new THREE.BufferGeometry();
-            updateGeometry(geometry , meshData,Meshid);//相关运算
+            var geometry=new THREE.BufferGeometry();
+            updateGeometry(geometry,meshData,Meshid);//相关运算
 
-            if (useSkinning == false) {//没有骨骼动画
-                mesh[Meshid] = new THREE.Mesh(geometry, meshMat[Meshid]);
-            } else {//有骨骼动画
-                mesh[Meshid] = new THREE.SkinnedMesh(geometry, meshMat[Meshid]);
-                meshMat[Meshid].skinning = true;
+            if(useSkinning==false){//没有骨骼动画
+                mesh[Meshid]=new THREE.Mesh(geometry,meshMat[Meshid]);
+            }else{//有骨骼动画
+                mesh[Meshid]=new THREE.SkinnedMesh(geometry,meshMat[Meshid]);
+                meshMat[Meshid].skinning=true;
             }//console.log(Meshid);输出了356次的0
 
             rootObject.add(mesh[Meshid]);//将新的mesh添加到对象中//
@@ -493,7 +495,19 @@ function MyPMLoader(url,LODArray,camera,animationType,animationSpeed){
                 if(index==lengthindex-1||index%Math.ceil(lengthindex/(numberLOD-1))==0)
                     pmMeshHistory.push(mesh[Meshid]);//记录mesh
             if(index==0){
-                console.log(geometry);
+                var THREE0=window.THREE1;
+                var scene=this.scene;//window中含有scene对象
+
+                var loader = new THREE0.BufferGeometryLoader();//BufferGeometry缓冲区几何结构
+                loader.load( './instancing/suzanne_buffergeometry.json', function ( geometry ) {
+                    geometry.computeVertexNormals();//计算顶点法线
+                    //console.log(geometry);
+                    geometry.scale( 0.5, 0.5, 0.5 );
+                    var material=new THREE0.MeshNormalMaterial();
+                    var mesh=new THREE0.InstancedMesh( geometry, material,2);
+                    //console.log(mesh);
+                    //scene.add(mesh);
+                } );
             }
         }
 
