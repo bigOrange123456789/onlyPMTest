@@ -471,7 +471,7 @@ function MyPMLoader(url,LODArray,camera,animationType,animationSpeed){
         function restoreMesh(Meshid,index,lengthindex)//Meshid始终为0
         {//index:0-330   lengthindex:331
             var useSkinning = true;
-            rootObject.remove(mesh[Meshid]);//将mesh从对象中移除//this is a tag 0000
+            //rootObject.remove(mesh[Meshid]);//将mesh从对象中移除//this is a tag 0000
 
             var pos=rootObject.position;
             var scale=rootObject.scale;
@@ -485,7 +485,7 @@ function MyPMLoader(url,LODArray,camera,animationType,animationSpeed){
                 meshMat[Meshid].skinning=true;
             }//console.log(Meshid);输出了356次的0
 
-            rootObject.add(mesh[Meshid]);//将新的mesh添加到对象中//
+            if(rootObject.children.length===0)rootObject.add(mesh[Meshid]);//将新的mesh添加到对象中//
             rootObject.position=pos;
             rootObject.scale=scale;
             setupPmSkinnedMesh(rootObject, skeletonBones, skeletonMatrix);//重要
@@ -496,56 +496,26 @@ function MyPMLoader(url,LODArray,camera,animationType,animationSpeed){
             if(index==0){//开启实例化渲染的代码后用于实例化的那个模型骨骼绑定出现了问题
                 var scene=this.scene;//window中含有scene对象
 
-                console.log(mesh[Meshid].material);
-                geometry.computeVertexNormals();//计算顶点法线
-                 //console.log(geometry);
-                 //geometry.scale(0.5,0.5,0.5);
-
-                var material=new THREE.MeshNormalMaterial();
-                //var material=mesh[Meshid].material;//InterleavedBufferAttribute
+                var material=new THREE.MeshNormalMaterial();//material.map=mesh[Meshid].material.map;
+                //var material=mesh[0].material;//InterleavedBufferAttribute
                 //var material=new THREE.MeshStandardMaterial();material.map=mesh[Meshid].material.map;
 
-
-                /*//开始创建材质
-                 var material=new THREE.MeshStandardMaterial({color:0xff00ff});//var material=new THREE.MeshNormalMaterial();
-                 var attibuteNames = Object.getOwnPropertyNames(material);
-                 for (var i=0;i < attibuteNames.length; i++) {
-                     var propName = attibuteNames[i];
-                     if (propName!=='id'&&propName!=='uuid') {
-                         material[propName]=mesh[Meshid].material[propName];
-                     }
-                 }
-                 material.map=mesh[Meshid].material.map;
-                 //完成材质的新建*/
-
-
-                var mesh2=new THREE.InstancedMesh( geometry, material,2);
+                var mesh2=new THREE.InstancedMesh(geometry,material,3);
                 var dummy=new THREE.Object3D();
+
+                dummy.position.set(10,-1,0);
+                dummy.updateMatrix();//由位置计算齐次坐标变换矩阵
+                mesh2.setMatrixAt(0, dummy.matrix);
+
                 dummy.position.set(5,-1,0);
                 dummy.updateMatrix();//由位置计算齐次坐标变换矩阵
                 mesh2.setMatrixAt(0, dummy.matrix);
-               dummy.position.set(-5,-1,0);
-               dummy.updateMatrix();
-               mesh2.setMatrixAt(1, dummy.matrix);
-               mesh2.instanceMatrix.needsUpdate = true;
-               scene.add(mesh2);
 
-                /*var loader = new THREE.BufferGeometryLoader();//BufferGeometry缓冲区几何结构
-                loader.load( './instancing/suzanne_buffergeometry.json', function ( geometry ) {
-                    geometry.computeVertexNormals();//计算顶点法线
-                    //console.log(geometry);
-                    geometry.scale( 0.5, 0.5, 0.5 );
-                    var material=new THREE.MeshNormalMaterial();
-                    var mesh=new THREE.InstancedMesh( geometry, material,2);
-                    var dummy=new THREE.Object3D();
-                    dummy.updateMatrix();//由位置计算齐次坐标变换矩阵
-                    mesh.setMatrixAt(0, dummy.matrix);
-                    dummy.position.set(0,1,0);
-                    dummy.updateMatrix();
-                    mesh.setMatrixAt(1, dummy.matrix);
-                    mesh.instanceMatrix.needsUpdate = true;
-                    scene.add(mesh);
-                } );*/
+                dummy.position.set(-5,-1,0);
+                dummy.updateMatrix();
+                mesh2.setMatrixAt(1, dummy.matrix);
+
+                scene.add(mesh2);
             }
         }
 
