@@ -67,7 +67,7 @@
 				var pmLoader = new MyPMLoader(
 						path,    //模型路径
 						LODArray,//LOD等级的数组
-						new THREE.Object3D(),  //LOD需要判断到相机的距离
+						camera,  //LOD需要判断到相机的距离
 						0,       //有多个动画时,表示第0个动画//可以通过pmLoader.updateAnimation(i)来切换动画
 						0.02     //动画播放速度//可以通过调整pmLoader.animationSpeed来调整速度
 				);//pmLoader = new myPMLoader('myModel/dongshizhang', LODNumber);//pmLoader = new THREE.PMLoader();//加载PM文件

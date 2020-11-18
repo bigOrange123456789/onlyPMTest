@@ -471,7 +471,7 @@ function MyPMLoader(url,LODArray,camera,animationType,animationSpeed){
         function restoreMesh(Meshid,index,lengthindex)//Meshid始终为0
         {//index:0-330   lengthindex:331
             var useSkinning = true;
-            //rootObject.remove(mesh[Meshid]);//将mesh从对象中移除//this is a tag 0000
+            rootObject.remove(mesh[Meshid]);//将mesh从对象中移除//this is a tag 0000
 
             var pos=rootObject.position;
             var scale=rootObject.scale;
@@ -485,7 +485,7 @@ function MyPMLoader(url,LODArray,camera,animationType,animationSpeed){
                 meshMat[Meshid].skinning=true;
             }//console.log(Meshid);输出了356次的0
 
-            if(rootObject.children.length===0)rootObject.add(mesh[Meshid]);//将新的mesh添加到对象中//
+            rootObject.add(mesh[Meshid]);//将新的mesh添加到对象中//
             rootObject.position=pos;
             rootObject.scale=scale;
             setupPmSkinnedMesh(rootObject, skeletonBones, skeletonMatrix);//重要
