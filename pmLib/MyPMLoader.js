@@ -461,21 +461,16 @@ function MyPMLoader(url,LODArray,camera,animationType,animationSpeed){
                 for(var key in mapPM)
                 {
                     restoreMesh(key,index,lengthindex);//从第二个JSON文件开始执行这个语句
-                    //console.log("6*",rootObject.position);//加载第二个JSON文件时才被执行
                 }
             }
-            //console.log("7*",rootObject.position);
         }
 
         //创建新的模型，将还原后的结果渲染到场景中
         function restoreMesh(Meshid,index,lengthindex)//Meshid始终为0
-        {
+        {//index:0-330   lengthindex:331
+            
+
             var useSkinning = true;
-
-            //需要弄清楚mesh从对象中移除到更新后再次被添加到对象中之间进行了哪些处理，尤其是与骨骼动画相关的部分
-            //console.log(rootObject);
-
-            //console.log(1,rootObject.position);
             rootObject.remove(mesh[Meshid]);//将mesh从对象中移除//this is a tag 0000
 
             var pos=rootObject.position;
@@ -483,28 +478,25 @@ function MyPMLoader(url,LODArray,camera,animationType,animationSpeed){
             var geometry = new THREE.BufferGeometry();
             updateGeometry(geometry , meshData,Meshid);//相关运算
 
+
+
             if (useSkinning == false) {//没有骨骼动画
                 mesh[Meshid] = new THREE.Mesh(geometry, meshMat[Meshid]);
             } else {//有骨骼动画
                 mesh[Meshid] = new THREE.SkinnedMesh(geometry, meshMat[Meshid]);
                 meshMat[Meshid].skinning = true;
             }//console.log(Meshid);输出了356次的0
-            //if(rootObject.children.length==0)
-            //console.log(2,rootObject.position);
-            rootObject.add(mesh[Meshid]);//将新的mesh添加到对象中//
-            //console.log(3,rootObject.position);
+
+            //if(rootObject.children.length===0){
+                rootObject.add(mesh[Meshid]);//将新的mesh添加到对象中//
+            //}
             rootObject.position=pos;
             rootObject.scale=scale;
-            ////console.log(4,rootObject.position);
-
             setupPmSkinnedMesh(rootObject, skeletonBones, skeletonMatrix);//重要
 
             if(typeof(index)!='undefined')
                 if(index==lengthindex-1||index%Math.ceil(lengthindex/(numberLOD-1))==0)
                     pmMeshHistory.push(mesh[Meshid]);//记录mesh
-
-
-            ////console.log(5,rootObject.position);
         }
 
         function updateGeometry(geometry, meshData, Meshid)
