@@ -495,19 +495,23 @@ function MyPMLoader(url,LODArray,camera,animationType,animationSpeed){
                 if(index==lengthindex-1||index%Math.ceil(lengthindex/(numberLOD-1))==0)
                     pmMeshHistory.push(mesh[Meshid]);//记录mesh
             if(index==0){
-                var THREE0=THREE;
-                console.log(THREE);
                 var scene=this.scene;//window中含有scene对象
 
-                var loader = new THREE0.BufferGeometryLoader();//BufferGeometry缓冲区几何结构
+                var loader = new THREE.BufferGeometryLoader();//BufferGeometry缓冲区几何结构
                 loader.load( './instancing/suzanne_buffergeometry.json', function ( geometry ) {
                     geometry.computeVertexNormals();//计算顶点法线
                     //console.log(geometry);
                     geometry.scale( 0.5, 0.5, 0.5 );
-                    var material=new THREE0.MeshNormalMaterial();
-                    var mesh=new THREE0.InstancedMesh( geometry, material,2);
-                    //console.log(mesh);
-                    //scene.add(mesh);
+                    var material=new THREE.MeshNormalMaterial();
+                    var mesh=new THREE.InstancedMesh( geometry, material,2);
+                    var dummy=new THREE.Object3D();
+                    dummy.updateMatrix();//由位置计算齐次坐标变换矩阵
+                    mesh.setMatrixAt(0, dummy.matrix);
+                    dummy.position.set(0,1,0);
+                    dummy.updateMatrix();
+                    mesh.setMatrixAt(1, dummy.matrix);
+                    mesh.instanceMatrix.needsUpdate = true;
+                    scene.add(mesh);
                 } );
             }
         }
