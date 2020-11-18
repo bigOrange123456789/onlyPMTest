@@ -36448,7 +36448,7 @@
 			this.setIndex(index);
 		},
 		addAttribute: function addAttribute(name, attribute) {
-			console.warn('THREE.BufferGeometry: .addAttribute() has been renamed to .setAttribute().');
+			//这里似乎每个PM的json文件都会输出一次//0000//console.warn('THREE.BufferGeometry: .addAttribute() has been renamed to .setAttribute().');
 
 			if (!(attribute && attribute.isBufferAttribute) && !(attribute && attribute.isInterleavedBufferAttribute)) {
 				console.warn('THREE.BufferGeometry: .addAttribute() now expects ( name, attribute ).');

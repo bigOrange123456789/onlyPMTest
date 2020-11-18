@@ -495,7 +495,8 @@ function MyPMLoader(url,LODArray,camera,animationType,animationSpeed){
                 if(index==lengthindex-1||index%Math.ceil(lengthindex/(numberLOD-1))==0)
                     pmMeshHistory.push(mesh[Meshid]);//记录mesh
             if(index==0){
-                var THREE0=window.THREE1;
+                var THREE0=THREE;
+                console.log(THREE);
                 var scene=this.scene;//window中含有scene对象
 
                 var loader = new THREE0.BufferGeometryLoader();//BufferGeometry缓冲区几何结构
