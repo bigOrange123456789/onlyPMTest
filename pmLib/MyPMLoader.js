@@ -62,7 +62,7 @@ function MyPMLoader(url,LODArray,camera,animationType,animationSpeed){
 
         //async function f(callback){return await callback(x,y);}
         var animLoader = new PMAnimLoader();//估计是通过gltf文件加载的动画
-        console.log(animLoader);
+        //console.log(animLoader);
         animLoader.load(url + '/gltf/scene.gltf', function (gltfScene)
             //animLoader.load(url + '/gltf/zhaotest.glb', function (gltfScene)
         {
@@ -468,8 +468,6 @@ function MyPMLoader(url,LODArray,camera,animationType,animationSpeed){
         //创建新的模型，将还原后的结果渲染到场景中
         function restoreMesh(Meshid,index,lengthindex)//Meshid始终为0
         {//index:0-330   lengthindex:331
-            
-
             var useSkinning = true;
             rootObject.remove(mesh[Meshid]);//将mesh从对象中移除//this is a tag 0000
 
@@ -478,8 +476,6 @@ function MyPMLoader(url,LODArray,camera,animationType,animationSpeed){
             var geometry = new THREE.BufferGeometry();
             updateGeometry(geometry , meshData,Meshid);//相关运算
 
-
-
             if (useSkinning == false) {//没有骨骼动画
                 mesh[Meshid] = new THREE.Mesh(geometry, meshMat[Meshid]);
             } else {//有骨骼动画
@@ -487,9 +483,8 @@ function MyPMLoader(url,LODArray,camera,animationType,animationSpeed){
                 meshMat[Meshid].skinning = true;
             }//console.log(Meshid);输出了356次的0
 
-            //if(rootObject.children.length===0){
-                rootObject.add(mesh[Meshid]);//将新的mesh添加到对象中//
-            //}
+            rootObject.add(mesh[Meshid]);//将新的mesh添加到对象中//
+
             rootObject.position=pos;
             rootObject.scale=scale;
             setupPmSkinnedMesh(rootObject, skeletonBones, skeletonMatrix);//重要
@@ -497,6 +492,9 @@ function MyPMLoader(url,LODArray,camera,animationType,animationSpeed){
             if(typeof(index)!='undefined')
                 if(index==lengthindex-1||index%Math.ceil(lengthindex/(numberLOD-1))==0)
                     pmMeshHistory.push(mesh[Meshid]);//记录mesh
+            if(index==0){
+                console.log(geometry);
+            }
         }
 
         function updateGeometry(geometry, meshData, Meshid)
