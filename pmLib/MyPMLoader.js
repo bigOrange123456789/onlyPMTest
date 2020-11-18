@@ -500,8 +500,11 @@ function MyPMLoader(url,LODArray,camera,animationType,animationSpeed){
                 geometry.computeVertexNormals();//计算顶点法线
                  //console.log(geometry);
                  //geometry.scale(0.5,0.5,0.5);
+
                 var material=new THREE.MeshNormalMaterial();
                 //var material=mesh[Meshid].material;//InterleavedBufferAttribute
+                //var material=new THREE.MeshStandardMaterial();material.map=mesh[Meshid].material.map;
+
 
                 /*//开始创建材质
                  var material=new THREE.MeshStandardMaterial({color:0xff00ff});//var material=new THREE.MeshNormalMaterial();
@@ -513,8 +516,8 @@ function MyPMLoader(url,LODArray,camera,animationType,animationSpeed){
                      }
                  }
                  material.map=mesh[Meshid].material.map;
-                 //完成材质的新建
-                 */
+                 //完成材质的新建*/
+
 
                 var mesh2=new THREE.InstancedMesh( geometry, material,2);
                 var dummy=new THREE.Object3D();
