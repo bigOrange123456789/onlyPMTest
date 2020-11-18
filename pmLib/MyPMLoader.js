@@ -212,6 +212,7 @@ function MyPMLoader(url,LODArray,camera,animationType,animationSpeed){
         }
 
         for(var Meshid=0;Meshid < meshData.faces.length;Meshid++){//meshData.faces.length为1
+            //console.log(this)
             restoreMesh(Meshid);//应该是处理基模时使用的，只被执行一次
             //console.log(6,rootObject.position);
         }
@@ -449,7 +450,7 @@ function MyPMLoader(url,LODArray,camera,animationType,animationSpeed){
         }
 
         //每加载一个PM的json文件执行一次，被调用总次数是PM的json文件个数//只被loadPmMesh函数调用
-        function pmRestore(pmData,index,lengthindex)
+        function pmRestore(pmData,index,lengthindex,THIS)
         {
             var mapPM={};
             for (var si = 0 ; si < pmData.length ; ++si)
@@ -462,19 +463,22 @@ function MyPMLoader(url,LODArray,camera,animationType,animationSpeed){
             {
                 for(var key in mapPM)
                 {
-                    restoreMesh(key,index,lengthindex);//从第二个JSON文件开始执行这个语句
+                    restoreMesh(key,index,lengthindex,THIS);//从第二个JSON文件开始执行这个语句
                 }
             }
         }
 
         //创建新的模型，将还原后的结果渲染到场景中
-        function restoreMesh(Meshid,index,lengthindex)//Meshid始终为0
+        function restoreMesh(Meshid,index,lengthindex,THIS)//Meshid始终为0
         {//index:0-330   lengthindex:331
             var useSkinning = true;
-            rootObject.remove(mesh[Meshid]);//将mesh从对象中移除//this is a tag 0000
+            //this.arrivedPMLevel
+            //console.log(THIS);
+            //console.log(!THIS||!THIS.arrivedPMLevel(index,lengthindex));
+            //var updateModel=true;//!THIS||!THIS.arrivedPMLevel(index,lengthindex);
+            //if(updateModel)
+                rootObject.remove(mesh[Meshid]);//将mesh从对象中移除//this is a tag 0000
 
-            var pos=rootObject.position;
-            var scale=rootObject.scale;
             var geometry=new THREE.BufferGeometry();
             updateGeometry(geometry,meshData,Meshid);//相关运算
 
@@ -485,15 +489,17 @@ function MyPMLoader(url,LODArray,camera,animationType,animationSpeed){
                 meshMat[Meshid].skinning=true;
             }//console.log(Meshid);输出了356次的0
 
-            rootObject.add(mesh[Meshid]);//将新的mesh添加到对象中//
-            rootObject.position=pos;
-            rootObject.scale=scale;
-            setupPmSkinnedMesh(rootObject, skeletonBones, skeletonMatrix);//重要
+            //if(updateModel)//加载基模，或者没有达到精度时加载
+            //{
+                rootObject.add(mesh[Meshid]);//将新的mesh添加到对象中//
+                setupPmSkinnedMesh(rootObject, skeletonBones, skeletonMatrix);//重要
+            //}
+
 
             if(typeof(index)!='undefined')
                 if(index==lengthindex-1||index%Math.ceil(lengthindex/(numberLOD-1))==0)
                     pmMeshHistory.push(mesh[Meshid]);//记录mesh
-            if(index==0){//开启实例化渲染的代码后用于实例化的那个模型骨骼绑定出现了问题
+            /*if(index==0){//开启实例化渲染的代码后用于实例化的那个模型骨骼绑定出现了问题
                 var scene=this.scene;//window中含有scene对象
 
                 var material=new THREE.MeshStandardMaterial();//material.map=mesh[Meshid].material.map;
@@ -522,7 +528,7 @@ function MyPMLoader(url,LODArray,camera,animationType,animationSpeed){
                 mesh2.setMatrixAt(2, dummy.matrix);
 
                 scene.add(mesh2);
-            }
+            }*/
         }
 
         function updateGeometry(geometry, meshData, Meshid)
@@ -630,7 +636,7 @@ function MyPMLoader(url,LODArray,camera,animationType,animationSpeed){
                     }
                     //完成测试//if (isPmLoading == false) restoreMesh();
                     function loopLODCheck(){
-                        if(Math.random()<0.01)THIS.updateAnimation(Math.floor(Math.random()*4));
+                        //if(Math.random()<0.01)THIS.updateAnimation(Math.floor(Math.random()*4));
                         requestAnimationFrame(loopLODCheck);
                         THIS.LODCheck(THIS.camera,THIS.skeletonBones,THIS.skeletonMatrix);
                     }loopLODCheck();/**/
@@ -646,7 +652,7 @@ function MyPMLoader(url,LODArray,camera,animationType,animationSpeed){
             loadLocalFile(pmFilesUrl + '/pmmesh' + index + '.json', function (data)
             {
                 var pmData = JSON.parse(data);
-                pmRestore(pmData,index,lengthindex);
+                pmRestore(pmData,index,lengthindex,THIS);
                 if (callback) callback();
             });
         }
@@ -677,19 +683,26 @@ function MyPMLoader(url,LODArray,camera,animationType,animationSpeed){
     }
     this.init(url);
     this.LODCheck=function(camera,skeletonBones,skeletonMatrix){
+        this.updateMesh(this.computeLODLevel(camera),skeletonBones,skeletonMatrix);//数组的下标0-(l+1)
+    }
+    this.computeLODLevel=function(camera){//等级越大模型越精细
         var distance=Math.sqrt(
             Math.pow(camera.position.x - this.rootObject.position.x,2)
             + Math.pow(camera.position.y - this.rootObject.position.y,2)
             + Math.pow(camera.position.z - this.rootObject.position.z,2)
         );
-        var level=this.LODArray.length;//分几段就有几个等级，级别编号从0开始
+        var level=this.LODArray.length;//分几段就有几个等级，级别编号从0开始,这是等级编号的最大值
         if(distance<this.LODArray[0])level=0;
         for(var i=1;i<this.LODArray.length;i++)
             if(distance>this.LODArray[i-1]&&distance<this.LODArray[i]){
                 level=i;
             }
-        this.updateMesh(this.LODArray.length-level,skeletonBones,skeletonMatrix);//数组的下标0-(l+1)
-        return level;
+        return this.LODArray.length-level;//越远等级越小
+    }
+    this.arrivedPMLevel=function(index,indexMAX){//index从0开始
+        var level=this.computeLODLevel(this.camera);
+        var levelMAX=this.LODArray.length;//从0开始
+        return index/indexMAX>=level/levelMAX;
     }
     this.animationRun=function(){
         if(this.animationMixer)this.animationMixer.update(this.animationSpeed);
