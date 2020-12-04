@@ -430,6 +430,7 @@ function MyPMLoader(url,LODArray,camera,animationType,animationSpeed){
 
             mesh[Meshid].geometry.computeBoundingBox();
             mesh[Meshid].geometry.computeBoundingSphere();
+            //myMesh.frustumCulled=false;
 
             //console.log(mesh[Meshid]);//00001
             //console.log(mesh[Meshid].geometry.boundingBox);
@@ -490,12 +491,12 @@ function MyPMLoader(url,LODArray,camera,animationType,animationSpeed){
                     //box.position=
                     var box=myMesh.geometry.boundingBox;
                     console.log(box);
-                    box.max.x+=myMesh.preParent.position.x;
+                    /*box.max.x+=myMesh.preParent.position.x;
                     box.max.x+=myMesh.preParent.position.x;
                     box.max.y+=myMesh.preParent.position.y;
                     box.min.x+=myMesh.preParent.position.x;
                     box.min.y+=myMesh.preParent.position.y;
-                    box.min.z+=myMesh.preParent.position.z;
+                    box.min.z+=myMesh.preParent.position.z;*/
                     console.log(myMesh.preParent);
                     //box.
                     if(frustum.intersectsBox(box)) {
@@ -512,7 +513,7 @@ function MyPMLoader(url,LODArray,camera,animationType,animationSpeed){
                     requestAnimationFrame(makeFrustumCulled);
                 }
 
-                makeFrustumCulled();
+                //makeFrustumCulled();
                 //this.scene.add(frustum);
             }
 
