@@ -1,59 +1,43 @@
 function MyPMLoader(url,LODArray,camera,animationType,animationSpeed){
     this.constructor= THREE.PMLoader;
-    this.mytest=0;
     this.pmMeshHistory=[];
     this.preLODIndex=-1;
     this.rootObject=new THREE.Object3D();
     this.mesh={};
-    //hadLoadAllMesh:false,
     this.LODNumber=3;//LOD的层级划分数量，默认为3
     this.LODArray=[];
     this.camera=null;
     this.skeletonBones=null;
     this.skeletonMatrix=null;
-    //this.scene=scene;//window中含有scene对象//appInst._renderScenePass.scene;//0000
-    //console.log(this.scene);
+
+    this.boundingBox=null;
+    this.boundingSphere=null;
 
     this.updateMesh=function(i,skeletonBones,skeletonMatrix){//这个函数的作用是协助实现LOD//0 - pmMeshHistory-1
         if(this.preLODIndex===i||i>=this.pmMeshHistory.length||i<0){this.preLODIndex=i;return;}
         this.preLODIndex=i;
         if(!this.pmMeshHistory[i].parent){
-            //this.animationMixer=new THREE.AnimationMixer(this.rootObject);//
-
             this.rootObject.add(this.pmMeshHistory[i]);
             this.rootObject.remove(this.mesh[0]);
 
             this.mesh[0]=this.pmMeshHistory[i];//console.log(this.pmMeshHistory);
 
             var skinnedMesh =this.rootObject.children[0];
+            //console.log(skeletonBones);
             skinnedMesh.add(skeletonBones.bones[0]);
             skinnedMesh.bind(skeletonBones,skeletonMatrix);
         }
     }
-    /*updateMesh:function(i){//这个函数的作用是协助实现LOD//0 - pmMeshHistory-1
-        if(this.preLODIndex===i||i>=this.pmMeshHistory.length||i<0){this.preLODIndex=i;return;}
-        this.preLODIndex=i;
-        if(!this.pmMeshHistory[i].parent){
-            //this.animationMixer=new THREE.AnimationMixer(this.rootObject);//
-            this.rootObject.remove(this.mesh[0]);
-            this.rootObject.add(this.pmMeshHistory[i]);
 
-            this.mesh[0]=this.pmMeshHistory[i];//console.log(this.pmMeshHistory);
-            //console.log(this.rootObject);
-            //this.animationMixers[0].play();
-            console.log(this);
-        }
-    },*/
-
-    //外界只需要执行下面的这个load函数
-    this.load=function(url,LODArray,camera, onLoad, onProgress, onError)
+    //外界创建这个对象后自动执行init函数，而init只需要执行下面的这个load函数
+    this.load=function(url,LODArray,camera, onLoad)
     {
         this.camera=camera;
         this.preLODIndex=LODArray.length;
         this.LODNumber=LODArray.length+1;
 
-        var THIS = this;
-        this.url = url;
+        var THIS=this;
+        this.url=url;
 
         var baseMeshUrl = url + '/basemesh.json';
         var skeletonUrl = url + '/skeleton.json';
@@ -62,28 +46,27 @@ function MyPMLoader(url,LODArray,camera,animationType,animationSpeed){
         var pmSkeletonBones  =this.skeletonBones;
         var pmSkeletonMatrix =this.smSkeletonMatrix;
 
-        //async function f(callback){return await callback(x,y);}
         var animLoader = new PMAnimLoader();//估计是通过gltf文件加载的动画
-        //console.log(animLoader);
         animLoader.load(url + '/gltf/scene.gltf', function (gltfScene)
-            //animLoader.load(url + '/gltf/zhaotest.glb', function (gltfScene)
-        {
+        {//animLoader.load(url + '/gltf/scene.glb', function (gltfScene)
             function loopAnimationRun(){
                 requestAnimationFrame(loopAnimationRun);
-                THIS.animationRun();
+                THIS.animationRun();//循环播放动画
             }loopAnimationRun();
-            //加载完gltf模型后在进行骨骼动画的处理
+            //加载完gltf模型后再进行骨骼动画的处理
+            console.log(gltfScene);
+
             var animationClips=gltfScene.animations;
             var gltfModel     =gltfScene.scene;
             gltfModel.traverse( function(node)
             {
                 if (node instanceof THREE.Mesh&&!pmSkeletonBones)//node是THREE.Mesh类型的实例，且pmSkeletonBones为空
-                {
+                {//00001//存储所有的骨骼骨头和变换矩阵
                     var bones = [];
                     cloneBones(node.skeleton.bones[0], bones);
                     THIS.skeletonBones=pmSkeletonBones= new THREE.Skeleton(bones, node.skeleton.boneInverses);
                     THIS.skeletonMatrix=pmSkeletonMatrix =  node.matrixWorld.clone();
-                    //console.log(THIS);
+                    //console.log(THIS);/**/
                 }
             });
             //加载完基模后再进行解析，执行parse函数
@@ -104,8 +87,8 @@ function MyPMLoader(url,LODArray,camera,animationType,animationSpeed){
 
         function cloneBones(rootBone, boneArray)//用于加载完gltf文件后的骨骼动画的处理
         {
-            var rootBoneClone = rootBone.clone();
-            rootBoneClone.children.splice(0, rootBoneClone.children.length);
+            var rootBoneClone=rootBone.clone();
+            rootBoneClone.children.splice(0,rootBoneClone.children.length);
             boneArray.push(rootBoneClone);
             for (var i = 0 ; i < rootBone.children.length ; ++i)
                 rootBoneClone.add(cloneBones(rootBone.children[i], boneArray));
@@ -153,7 +136,6 @@ function MyPMLoader(url,LODArray,camera,animationType,animationSpeed){
                 jsonData.geometries[0].data.vertices[i * 3 + 2]
             ]);
 
-
         for (var i = 0 ; i < jsonData.geometries[0].data.vertices.length / 3 ; ++i)
         {
             var skeletonId = skeletonIndexData[i];
@@ -195,7 +177,6 @@ function MyPMLoader(url,LODArray,camera,animationType,animationSpeed){
         }
 
         computeIncidentFaces();
-        computeBoundingBox();
 
         for(var i=0; i< meshData.materials.length;i++)
         {
@@ -212,16 +193,12 @@ function MyPMLoader(url,LODArray,camera,animationType,animationSpeed){
         }
 
         for(var Meshid=0;Meshid < meshData.faces.length;Meshid++){//meshData.faces.length为1
-            //console.log(this)
             restoreMesh(Meshid);//应该是处理基模时使用的，只被执行一次
-            //console.log(6,rootObject.position);
         }
-        //console.log(7,rootObject.position);
 
         var THIS=this;
-        loadLocalFile(pmFilesUrl + 'desc.json',function (data)
+        loadLocalFile(pmFilesUrl+'desc.json',function (data)
         {
-            //console.log(10,rootObject.position);
             var jsonData = JSON.parse(data);
             splitCount = jsonData.splitCount;
             startPmLoading(THIS);
@@ -273,31 +250,20 @@ function MyPMLoader(url,LODArray,camera,animationType,animationSpeed){
         }
 
         function setupPmSkinnedMesh(rootObject, skeletonBones , skeletonMatrix)
-        {
+        {//set up设置//设置PM骨骼网格//00001
             var skinnedMesh = rootObject.children[0];
+            //console.log(skeletonBones);
             skinnedMesh.add(skeletonBones.bones[0]);
             skinnedMesh.bind(skeletonBones,skeletonMatrix);
         }
 
         function loadLocalFile(fileName , loadCallback)
         {
-            //console.log(8,rootObject.position);
             var xmlhttp = window.XMLHttpRequest ? new XMLHttpRequest() : new ActiveXObject("Microsoft.XMLHTTP");
-            //console.log(8.1,rootObject.position);
-            /*var posX=rootObject.position.x;
-            var posY=rootObject.position.y;
-            var posZ=rootObject.position.z;
-            var scaleX=rootObject.scale.x;
-            var scaleY=rootObject.scale.y;
-            var scaleZ=rootObject.scale.z;*/
             xmlhttp.onreadystatechange = function ()//第二次执行这个函数时rootObject.position被改变//存有 XMLHttpRequest 的状态。从 0 到 4 发生变化
             {
-                //console.log(8.2,rootObject.position);
                 if (xmlhttp.readyState == 4 && xmlhttp.status == 200)
                     if (loadCallback){
-                        //rootObject.position.set(posX,posY,posZ);
-                        //rootObject.scale.set(scaleX,scaleY,scaleZ);
-                        //console.log(9,rootObject.position);
                         loadCallback(xmlhttp.responseText);
                     }
             }
@@ -305,7 +271,7 @@ function MyPMLoader(url,LODArray,camera,animationType,animationSpeed){
             xmlhttp.send();
         }
 
-        function computeIncidentFaces()
+        function computeIncidentFaces()///计算入射面
         {
             for (var i = 0 ; i < meshData.vertices.length ; ++i)
                 incidentFaces[i] = [];
@@ -313,29 +279,6 @@ function MyPMLoader(url,LODArray,camera,animationType,animationSpeed){
                 for (var vi = 0 ; vi < meshData.faces[fi].length ; ++vi)
                     for(var faceIndex=0;faceIndex<3;faceIndex++)
                         incidentFaces[meshData.faces[fi][vi][faceIndex]].push(vi);
-        }
-
-        function computeBoundingBox()
-        {
-            var minX = 99999.0 , maxX = -99999.0 , minY = 99999.0 , maxY = -99999.0 , minZ = 99999.0 , maxZ = -99999.0;
-            for (var i = 0 ; i < meshData.vertices.length ; ++i)
-            {
-                minX = Math.min(minX , meshData.vertices[i][0]);
-                maxX = Math.max(maxX , meshData.vertices[i][0]);
-
-                minY = Math.min(minY , meshData.vertices[i][1]);
-                maxY = Math.max(maxY , meshData.vertices[i][1]);
-
-                minZ = Math.min(minZ , meshData.vertices[i][2]);
-                maxZ = Math.max(maxZ , meshData.vertices[i][2]);
-            }
-
-            meshData.bbox =
-                {
-                    min : {x : minX , y : minY , z : minZ} ,
-                    max : {x : maxX , y : maxY , z : maxZ} ,
-                    center : {x : (minX + maxX) * 0.5 , y : (minY + maxY) * 0.5 , z : (minZ + maxZ) * 0.5}
-                };
         }
 
         function isOriginalFaceOfT(tIndex ,objectF,Meshid, face , vsData)
@@ -468,49 +411,116 @@ function MyPMLoader(url,LODArray,camera,animationType,animationSpeed){
             }
         }
 
-        //创建新的模型，将还原后的结果渲染到场景中
+        //创建新的模型，将还原后的结果渲染到场景中//restore恢复
         function restoreMesh(Meshid,index,lengthindex,THIS)//Meshid始终为0
         {//index:0-330   lengthindex:331
             var useSkinning = true;
-            //this.arrivedPMLevel
-            //console.log(THIS);
-            //console.log(!THIS||!THIS.arrivedPMLevel(index,lengthindex));
-            //var updateModel=true;//!THIS||!THIS.arrivedPMLevel(index,lengthindex);
-            //if(updateModel)
-                rootObject.remove(mesh[Meshid]);//将mesh从对象中移除//this is a tag 0000
+            rootObject.remove(mesh[Meshid]);//将mesh从对象中移除//this is a tag 0000
 
             var geometry=new THREE.BufferGeometry();
             updateGeometry(geometry,meshData,Meshid);//相关运算
 
-            if(useSkinning==false){//没有骨骼动画
+            if(useSkinning===false){//没有骨骼动画
                 mesh[Meshid]=new THREE.Mesh(geometry,meshMat[Meshid]);
             }else{//有骨骼动画
                 mesh[Meshid]=new THREE.SkinnedMesh(geometry,meshMat[Meshid]);
                 meshMat[Meshid].skinning=true;
             }//console.log(Meshid);输出了356次的0
 
-            //if(updateModel)//加载基模，或者没有达到精度时加载
-            //{
-                rootObject.add(mesh[Meshid]);//将新的mesh添加到对象中//
-                setupPmSkinnedMesh(rootObject, skeletonBones, skeletonMatrix);//重要
-            //}
 
+            mesh[Meshid].geometry.computeBoundingBox();
+            mesh[Meshid].geometry.computeBoundingSphere();
+
+            //console.log(mesh[Meshid]);//00001
+            //console.log(mesh[Meshid].geometry.boundingBox);
+            //console.log(mesh[Meshid].geometry.boundingSphere);
+            if(index===lengthindex-1){//00001
+                var myMesh=mesh[Meshid];//.geometry.boundingBox;
+                myMesh.frustumCulled=false;
+                myMesh.preAtScene=true;//初始时在场景中
+                myMesh.preParent=rootObject;
+                console.log(myMesh);
+                    /*var box = new THREE.Box3();
+                    box.setFromCenterAndSize(
+                        new THREE.Vector3( 10, 10, 0 ),
+                        new THREE.Vector3( 10, 10, 10 )
+                    );*/
+                    var helper = new THREE.Box3Helper(
+                        mesh[Meshid].geometry.boundingBox, 0xffff00 );
+                    this.scene.add( helper );//画出包围盒的框
+
+
+                //console.log(this.camera);//00001
+                function makeFrustumCulled(){//单独集中处理似乎更好一些
+                    var camera=this.camera;
+                    var frustum = new THREE.Frustum();
+                    frustum.setFromMatrix( new THREE.Matrix4().multiplyMatrices( camera.projectionMatrix,camera.matrixWorldInverse ) );
+                    /*frustum.position.set(
+                        camera.position.x,
+                        camera.position.y,
+                        camera.position.z);*/
+                    //.setFromMatrix
+
+                    //frustum.rotation=camera.rotation;
+                    //dummy.updateMatrix();
+                    //var box=myMesh.geometry.boundingBox;
+                    //console.log(myMesh.position);//matrixWorld
+                    //console.log(myMesh.preParent);
+                    /*var matrix = new THREE.Matrix4();
+                    matrix.set( 1,0,0,0,
+                                0,1,0,0,
+                                0,0,1,0,
+                                0,0,0,0)
+                    console.log(matrix)*/
+                    /*console.log(box);
+                    box.position.set(
+                        myMesh.preParent.position.x,
+                        myMesh.preParent.position.y,
+                        myMesh.preParent.position.z
+                    );*/
+                        //=myMesh.preParent.position;
+                    //box.rotation=myMesh.preParent.rotation;
+                    //box.scale=myMesh.preParent.scale;
+                    //box.matrixWorld=myMesh.preParent.matrixWorld;
+                    //box.updateMatrix();
+                    //console.log(box);
+
+                    //box.position=box.parent.position;
+                    //console.log(box.parent)
+                    //box.position=
+                    var box=myMesh.geometry.boundingBox;
+                    if(frustum.intersectsBox(box)) {
+                        if(!myMesh.preAtScene) {
+                            myMesh.preAtScene=true;
+                            myMesh.preParent.add(myMesh);
+                        }
+                    }else{
+                        if(myMesh.preAtScene) {
+                            myMesh.preAtScene=false;
+                            myMesh.preParent.remove(myMesh);
+                        }
+                    }
+                    requestAnimationFrame(makeFrustumCulled);
+                }
+
+                makeFrustumCulled();
+                //this.scene.add(frustum);
+            }
+
+
+            rootObject.add(mesh[Meshid]);//将新的mesh添加到对象中//
+            setupPmSkinnedMesh(rootObject, skeletonBones, skeletonMatrix);//重要
 
             if(typeof(index)!='undefined')
-                if(index==lengthindex-1||index%Math.ceil(lengthindex/(numberLOD-1))==0)
-                    pmMeshHistory.push(mesh[Meshid]);//记录mesh
+                if(index===lengthindex-1||index%Math.ceil(lengthindex/(numberLOD-1))===0)
+                    pmMeshHistory.push(mesh[Meshid]);//记录mesh//用于存储网格信息historyMesh 00000
+
             /*if(index==0){//开启实例化渲染的代码后用于实例化的那个模型骨骼绑定出现了问题
-                var scene=this.scene;//window中含有scene对象
+                //实例化渲染的测试  000001
+                var scene=this.scene;//window中含有scene对象//0000
 
                 var material=new THREE.MeshStandardMaterial();//material.map=mesh[Meshid].material.map;
-                //var material=meshMat[0].clone();//InterleavedBufferAttribute
-                //var material=new THREE.MeshStandardMaterial();//material.map=mesh[Meshid].material.map;
                 material.map=new THREE.TextureLoader().load( 'myModel/dongshizhang5/Texture_0_0.jpeg' );
-
-
-                console.log(material);
-                geometry.computeVertexNormals();
-                geometry.computeFaceNormals();
 
                 var mesh2=new THREE.InstancedMesh(geometry,material,3);
                 var dummy=new THREE.Object3D();
@@ -527,7 +537,44 @@ function MyPMLoader(url,LODArray,camera,animationType,animationSpeed){
                 dummy.updateMatrix();
                 mesh2.setMatrixAt(2, dummy.matrix);
 
+                function mytest(){
+                    dummy.position.y+=0.1;
+                    dummy.updateMatrix();
+                    //console.log(dummy.matrix);
+                    mesh2.setMatrixAt(2, dummy.matrix);//console.log(mesh2);
+                    mesh2.instanceMatrix.needsUpdate=true;
+                    //.updateMatrix();
+                    requestAnimationFrame(mytest);
+                }mytest();
+
                 scene.add(mesh2);
+                window.mesh2=mesh2;
+            }else if(index===lengthindex-1){
+                var scene=this.scene;//window中含有scene对象//0000
+
+                var material=new THREE.MeshStandardMaterial();//material.map=mesh[Meshid].material.map;
+                //var material=meshMat[0].clone();//InterleavedBufferAttribute
+                //var material=new THREE.MeshStandardMaterial();//material.map=mesh[Meshid].material.map;
+                material.map=new THREE.TextureLoader().load( 'myModel/dongshizhang5/Texture_0_0.jpeg' );
+
+                var mesh3=new THREE.InstancedMesh(geometry,material,3);
+                var dummy=new THREE.Object3D();
+
+                var x0=0,y0=0,z0=50;
+                dummy.rotation.set(0,Math.PI,0);
+                dummy.position.set(x0+10,y0-1,z0);
+                dummy.updateMatrix();//由位置计算齐次坐标变换矩阵
+                mesh3.setMatrixAt(0, dummy.matrix);
+
+                dummy.position.set(x0+0,y0-1,z0);
+                dummy.updateMatrix();//由位置计算齐次坐标变换矩阵
+                mesh3.setMatrixAt(1, dummy.matrix);
+
+                dummy.position.set(x0-5,y0-10,z0);
+                dummy.updateMatrix();
+                mesh3.setMatrixAt(2, dummy.matrix);
+
+                scene.add(mesh3);//0000
             }*/
         }
 
@@ -667,7 +714,7 @@ function MyPMLoader(url,LODArray,camera,animationType,animationSpeed){
     this.animationMixer;
     this.animationMixers=[];
     this.animationSpeed=animationSpeed;
-    this.init=function(url){
+    this.init=function(url){//这里是初始要执行的代码
         var THIS=this;
         this.load(url,this.LODArray, this.camera,function (myObject3D) {//这里得到的myObject3D就是this.rootObject
             //开始设置动画//进行这个动画设置的时候可能还只是一个基模
@@ -681,7 +728,7 @@ function MyPMLoader(url,LODArray,camera,animationType,animationSpeed){
             THIS.obj.add(THIS.rootObject);
         });
     }
-    this.init(url);
+    this.init(url);//初始化函数//00001
     this.LODCheck=function(camera,skeletonBones,skeletonMatrix){
         this.updateMesh(this.computeLODLevel(camera),skeletonBones,skeletonMatrix);//数组的下标0-(l+1)
     }
@@ -704,7 +751,7 @@ function MyPMLoader(url,LODArray,camera,animationType,animationSpeed){
         var levelMAX=this.LODArray.length;//从0开始
         return index/indexMAX>=level/levelMAX;
     }
-    this.animationRun=function(){
+    this.animationRun=function(){//更新动作从而播放连续的动画
         if(this.animationMixer)this.animationMixer.update(this.animationSpeed);
     }
     this.updateAnimation=function(i){//这个函数可以切换动画

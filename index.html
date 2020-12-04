@@ -11,6 +11,82 @@
 		</style>
 	</head>
 
+	<script id="vertInstanced" type="x-shader/x-vertex">
+		#define SHADER_NAME vertInstanced
+
+		precision highp float;
+
+		uniform mat4 modelViewMatrix;
+		uniform mat4 projectionMatrix;
+
+		attribute vec3 position;
+		attribute vec3 mcol0;
+		attribute vec3 mcol1;
+		attribute vec3 mcol2;
+		attribute vec3 mcol3;
+
+		#ifdef PICKING
+			attribute vec3 pickingColor;
+		#else
+			attribute vec3 color;
+			varying vec3 vPosition;
+		#endif
+
+		varying vec3 vColor;
+
+		void main()	{
+
+			mat4 matrix = mat4(
+				vec4( mcol0, 0 ),
+				vec4( mcol1, 0 ),
+				vec4( mcol2, 0 ),
+				vec4( mcol3, 1 )
+			);
+
+			vec3 positionEye = ( modelViewMatrix * matrix * vec4( position, 1.0 ) ).xyz;
+
+			#ifdef PICKING
+				vColor = pickingColor;
+			#else
+				vColor = color;
+				vPosition = positionEye;
+			#endif
+
+			gl_Position = projectionMatrix * vec4( positionEye, 1.0 );
+
+		}
+
+	</script>
+	<script id="fragInstanced" type="x-shader/x-fragment"                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          >
+		#define SHADER_NAME fragInstanced
+
+		#extension GL_OES_standard_derivatives : enable
+
+		precision highp float;
+
+		varying vec3 vColor;
+
+		#ifndef PICKING
+			varying vec3 vPosition;
+		#endif
+
+		void main()	{
+
+			#ifdef PICKING
+				gl_FragColor = vec4( vColor, 1.0 );
+			#else
+				vec3 fdx = dFdx( vPosition );
+				vec3 fdy = dFdy( vPosition );
+				vec3 normal = normalize( cross( fdx, fdy ) );
+				float diffuse = dot( normal, vec3( 0.0, 0.0, 1.0 ) );
+
+				gl_FragColor = vec4( diffuse * vColor, 1.0 );
+			#endif
+
+		}
+
+	</script>
+
 	<body>
 
 		<div id="pminfo" style="position:absolute; z-index:2; left:10px; top:10px;display:inline;color:red;size:20px">
@@ -46,9 +122,9 @@
 				document.body.appendChild( renderer.domElement );
 
 				// CAMERAS
-				camera = new THREE.PerspectiveCamera( 70, winWidth / winHeight, 0.1, 1000 );
+				camera =new THREE.PerspectiveCamera( 70, winWidth / winHeight, 0.1, 1000 );
 				camera.rotation.set(0,Math.PI/2,0);
-				controls = new THREE.OrbitControls(camera , renderer.domElement);
+				controls=new OrbitControls(camera , renderer.domElement);
 				//这里开始调控摄像头
 				controls.reset();
 				camera.position.copy(new THREE.Vector3(-30, 0.5, 25));
@@ -61,12 +137,13 @@
 				scene = new THREE.Scene();
 
 				//开始创建PM对象
-				var LODArray=[45,46,50,55]//4个数字表示距离，可以将模型分为5级;
+				var LODArray=[50,55]//4个数字表示距离，可以将模型分为5级;
+				//var path='/myModel/Female01';
 				var path='/myModel/dongshizhang5';
 				console.log(path);
 				var pmLoader = new MyPMLoader(
 						path,    //模型路径
-						LODArray,//LOD等级的数组
+						LODArray,//LOD为空时不设LOD//LOD等级的数组
 						camera,  //LOD需要判断到相机的距离
 						0,       //有多个动画时,表示第0个动画//可以通过pmLoader.updateAnimation(i)来切换动画
 						0.02     //动画播放速度//可以通过调整pmLoader.animationSpeed来调整速度
@@ -88,6 +165,11 @@
                 scene.add(targetObject);
 
                 dirLight.target = targetObject;
+
+				/*var material = new THREE.MeshNormalMaterial();
+				var geometry = new THREE.CubeGeometry(10,10,10);
+				var mesh= new THREE.Mesh(geometry, material);
+				scene.add(mesh);*/
 			}
 
 			function _onResize()
@@ -105,7 +187,7 @@
 			{
 			    requestAnimationFrame(animate);
 				renderer.render(scene,camera);
-				divInfo.textContent='三角面数量(LOD变化范围3039-15990): ' + renderer.info.render.triangles;
+				divInfo.textContent='三角面数量: ' + renderer.info.render.triangles;
                 controls.update();
 				if (window.innerWidth != winWidth || window.innerHeight != winHeight) _onResize();
 			}

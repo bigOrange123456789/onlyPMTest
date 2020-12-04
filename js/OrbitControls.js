@@ -1,22 +1,7 @@
-/**
- * @author qiao / https://github.com/qiao
- * @author mrdoob / http://mrdoob.com
- * @author alteredq / http://alteredqualia.com/
- * @author WestLangley / http://github.com/WestLangley
- * @author erich666 / http://erichaines.com
- */
-
-// This set of controls performs orbiting, dollying (zooming), and panning.
-// Unlike TrackballControls, it maintains the "up" direction object.up (+Y by default).
-//
-//    Orbit - left mouse / touch: one finger move
-//    Zoom - middle mouse, or mousewheel / touch: two finger spread or squish
-//    Pan - right mouse, or arrow keys / touch: three finter swipe
-
-THREE.OrbitControls = function ( object, domElement ) {
-
+//controls = new THREE.OrbitControls(camera , renderer.domElement);
+//这是一个构造函数
+function OrbitControls( object,domElement) {
 	this.object = object;
-
 	this.domElement = ( domElement !== undefined ) ? domElement : document;
 
 	// Set to false to disable this control
@@ -80,21 +65,7 @@ THREE.OrbitControls = function ( object, domElement ) {
 	this.position0 = this.object.position.clone();
 	this.zoom0 = this.object.zoom;
 
-	//
-	// public methods
-	//
 
-	this.getPolarAngle = function () {
-
-		return spherical.phi;
-
-	};
-
-	this.getAzimuthalAngle = function () {
-
-		return spherical.theta;
-
-	};
 
 	this.reset = function () {
 
@@ -656,35 +627,18 @@ THREE.OrbitControls = function ( object, domElement ) {
 	}
 
 	function handleTouchEnd( event ) {
-
-		//console.log( 'handleTouchEnd' );
-
 	}
 
-	//
-	// event handlers - FSM: listen for events and reset state
-	//
-
 	function onMouseDown( event ) {
-
 		if ( scope.enabled === false ) return;
-
 		event.preventDefault();
-
 		if ( event.button === scope.mouseButtons.ORBIT ) {
-
 			if ( scope.enableRotate === false ) return;
-
 			handleMouseDownRotate( event );
-
 			state = STATE.ROTATE;
-
 		} else if ( event.button === scope.mouseButtons.ZOOM ) {
-
 			if ( scope.enableZoom === false ) return;
-
 			handleMouseDownDolly( event );
-
 			state = STATE.DOLLY;
 
 		} else if ( event.button === scope.mouseButtons.PAN ) {
@@ -905,10 +859,10 @@ THREE.OrbitControls = function ( object, domElement ) {
 
 };
 
-THREE.OrbitControls.prototype = Object.create( THREE.EventDispatcher.prototype );
-THREE.OrbitControls.prototype.constructor = THREE.OrbitControls;
+OrbitControls.prototype = Object.create( THREE.EventDispatcher.prototype );
+OrbitControls.prototype.constructor = THREE.OrbitControls;
 
-Object.defineProperties( THREE.OrbitControls.prototype, {
+Object.defineProperties( OrbitControls.prototype, {
 
 	center: {
 
@@ -1023,12 +977,8 @@ Object.defineProperties( THREE.OrbitControls.prototype, {
 		},
 
 		set: function ( value ) {
-
 			console.warn( 'THREE.OrbitControls: .dynamicDampingFactor has been renamed. Use .dampingFactor instead.' );
 			this.dampingFactor = value;
-
 		}
-
 	}
-
 } );
