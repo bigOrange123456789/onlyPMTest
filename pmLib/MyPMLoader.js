@@ -489,6 +489,15 @@ function MyPMLoader(url,LODArray,camera,animationType,animationSpeed){
                     //console.log(box.parent)
                     //box.position=
                     var box=myMesh.geometry.boundingBox;
+                    console.log(box);
+                    box.max.x+=myMesh.preParent.position.x;
+                    box.max.x+=myMesh.preParent.position.x;
+                    box.max.y+=myMesh.preParent.position.y;
+                    box.min.x+=myMesh.preParent.position.x;
+                    box.min.y+=myMesh.preParent.position.y;
+                    box.min.z+=myMesh.preParent.position.z;
+                    console.log(myMesh.preParent);
+                    //box.
                     if(frustum.intersectsBox(box)) {
                         if(!myMesh.preAtScene) {
                             myMesh.preAtScene=true;
