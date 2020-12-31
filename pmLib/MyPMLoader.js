@@ -47,7 +47,7 @@ function MyPMLoader(url,LODArray,camera,animationType,animationSpeed){
         var pmSkeletonMatrix =this.smSkeletonMatrix;
 
         var loader= new THREE.GLTFLoader();
-        loader.load(url + '/gltf/scene.gltf', (gltfScene) => {
+        loader.load(url + '/gltf/scene.glb', (gltfScene) => {
             function loopAnimationRun(){
                 requestAnimationFrame(loopAnimationRun);
                 THIS.animationRun();//循环播放动画
