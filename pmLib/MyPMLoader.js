@@ -48,11 +48,6 @@ function MyPMLoader(url,LODArray,camera,animationType,animationSpeed){
 
         var loader= new THREE.GLTFLoader();
         loader.load(url + '/gltf/scene.gltf', (gltfScene) => {
-            console.log(gltfScene);
-        //});
-        //var animLoader = new PMAnimLoader();//估计是通过gltf文件加载的动画
-        //animLoader.load(url + '/gltf/scene.gltf', function (gltfScene)
-        //{//animLoader.load(url + '/gltf/scene.glb', function (gltfScene)
             function loopAnimationRun(){
                 requestAnimationFrame(loopAnimationRun);
                 THIS.animationRun();//循环播放动画
